@@ -262,20 +262,18 @@ export default function ProfileScreen() {
             <MaterialIcons name="chevron-right" size={20} color={Colors.textMuted} />
           </TouchableOpacity>
           <View style={styles.quickLinkDivider} />
+          <View style={styles.quickLinkDivider} />
           {user.isAdmin && (
-            <>
-              <View style={styles.quickLinkDivider} />
-              <TouchableOpacity style={styles.quickLink} onPress={() => router.push('/admin')} activeOpacity={0.8}>
-                <View style={[styles.quickLinkIcon, { backgroundColor: Colors.primary + '22' }]}>
-                  <MaterialIcons name="admin-panel-settings" size={20} color={Colors.primary} />
-                </View>
-                <View style={styles.quickLinkInfo}>
-                  <Text style={styles.quickLinkTitle}>Admin Control Hub</Text>
-                  <Text style={styles.quickLinkSub}>Manage users, orders & analytics</Text>
-                </View>
-                <MaterialIcons name="chevron-right" size={20} color={Colors.textMuted} />
-              </TouchableOpacity>
-            </>
+            <TouchableOpacity style={styles.quickLink} onPress={() => router.push('/admin')} activeOpacity={0.8}>
+              <View style={[styles.quickLinkIcon, { backgroundColor: Colors.primary + '22' }]}>
+                <MaterialIcons name="admin-panel-settings" size={20} color={Colors.primary} />
+              </View>
+              <View style={styles.quickLinkInfo}>
+                <Text style={styles.quickLinkTitle}>Admin Control Hub</Text>
+                <Text style={styles.quickLinkSub}>Manage users, orders & analytics</Text>
+              </View>
+              <MaterialIcons name="chevron-right" size={20} color={Colors.textMuted} />
+            </TouchableOpacity>
           )}
           <TouchableOpacity style={styles.quickLink} onPress={() => router.push('/notification-settings')} activeOpacity={0.8}>
             <View style={[styles.quickLinkIcon, { backgroundColor: Colors.success + '22' }]}>

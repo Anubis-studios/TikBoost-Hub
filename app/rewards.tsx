@@ -60,17 +60,17 @@ const MONTHLY_REWARDS = [
   {
     rank: 1, title: '15K TikTok Followers',
     desc: 'Win 15,000 TikTok followers and become a social media sensation!',
-    medalColor: '#FFD700', bgColor: '#FFF8E0',
+    medalColor: '#FFD700', bgColor: 'rgba(255,215,0,0.12)',
   },
   {
     rank: 2, title: '10K TikTok Followers',
     desc: 'Grow your TikTok following with 10,000 new followers!',
-    medalColor: '#C0C0C0', bgColor: '#F5F5F5',
+    medalColor: '#C0C0C0', bgColor: 'rgba(192,192,192,0.1)',
   },
   {
     rank: 3, title: '5K TikTok Followers',
     desc: 'Get a boost of 5,000 new TikTok followers!',
-    medalColor: '#CD7F32', bgColor: '#FFF0E0',
+    medalColor: '#CD7F32', bgColor: 'rgba(205,127,50,0.12)',
   },
 ];
 
@@ -78,17 +78,17 @@ const WEEKLY_REWARDS = [
   {
     rank: 1, title: '5K TikTok Followers',
     desc: 'Gain 5,000 new TikTok followers this week!',
-    medalColor: '#FFD700', bgColor: '#FFF8E0',
+    medalColor: '#FFD700', bgColor: 'rgba(255,215,0,0.12)',
   },
   {
     rank: 2, title: '3K TikTok Followers',
     desc: 'Expand your TikTok reach with 3,000 new followers!',
-    medalColor: '#C0C0C0', bgColor: '#F5F5F5',
+    medalColor: '#C0C0C0', bgColor: 'rgba(192,192,192,0.1)',
   },
   {
     rank: 3, title: '1K TikTok Followers',
     desc: 'Attract 1,000 new followers to your TikTok account!',
-    medalColor: '#CD7F32', bgColor: '#FFF0E0',
+    medalColor: '#CD7F32', bgColor: 'rgba(205,127,50,0.12)',
   },
 ];
 

@@ -9,7 +9,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Animated,
-  Clipboard,
+  Clipboard as RNClipboard,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -52,8 +52,10 @@ export default function RedeemGiftScreen() {
   };
 
   const handlePaste = async () => {
-    const text = await Clipboard.getString();
-    if (text) setCode(text.trim().toUpperCase());
+    try {
+      const text = await RNClipboard.getString();
+      if (text) setCode(text.trim().toUpperCase());
+    } catch {}
   };
 
   const handleRedeem = async () => {

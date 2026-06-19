@@ -11,6 +11,7 @@ import {
   ActivityIndicator,
   Modal,
   FlatList,
+  Clipboard,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -181,7 +182,7 @@ export default function EditProfileScreen() {
   const router = useRouter();
 
   const [tiktokUsername, setTiktokUsername] = useState(user?.tiktokUsername || '');
-  const [displayName, setDisplayName] = useState(user?.username || user?.tiktokUsername || '');
+  const [displayName, setDisplayName] = useState(user?.tiktokUsername || '');
   const [birthday, setBirthday] = useState('');
   const [gender, setGender] = useState<'male' | 'female' | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -217,7 +218,6 @@ export default function EditProfileScreen() {
 
   const hasChanges =
     tiktokUsername.trim().replace(/^@/, '') !== user.tiktokUsername ||
-    displayName.trim() !== (user as any).username ||
     !!birthday || !!gender;
 
   return (

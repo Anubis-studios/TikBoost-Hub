@@ -343,8 +343,7 @@ export async function markNotificationReadDB(notificationId: string) {
 }
 
 export async function markAllNotificationsReadDB(userId: string) {
-  await supabase.from('notifications').update({ is_read: false }).eq('user_id', userId).eq('is_read', false);
-  await supabase.from('notifications').update({ is_read: true }).eq('user_id', userId);
+  await supabase.from('notifications').update({ is_read: true }).eq('user_id', userId).eq('is_read', false);
 }
 
 // Leaderboard

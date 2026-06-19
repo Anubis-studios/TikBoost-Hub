@@ -54,6 +54,7 @@ export const FontSize = {
   xl: 20,
   xxl: 24,
   xxxl: 32,
+  xxxxl: 40,
 };
 
 export const BorderRadius = {
@@ -65,6 +66,13 @@ export const BorderRadius = {
 };
 
 export const Shadow = {
+  medium: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 6,
+  },
   sm: {
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },

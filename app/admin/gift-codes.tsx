@@ -489,7 +489,7 @@ export default function AdminGiftCodesScreen() {
 
   const handleCopy = (text: string) => {
     const { Clipboard } = require('react-native');
-    Clipboard.setString(text);
+    try { Clipboard.setString(text); } catch {}
     showAlert('Copied!', `Code "${text}" copied to clipboard.`);
   };
 
