@@ -95,36 +95,69 @@ async function validateGooglePlay(
     return { valid: true };
   }
 
-  // ── Production path (uncomment when Google Play credentials are available) ───
-  // try {
-  //   const serviceAccount = JSON.parse(Deno.env.get('GOOGLE_PLAY_SERVICE_ACCOUNT_JSON') ?? '{}');
-  //   const packageName = 'com.tikboost.app';
-  //
-  //   // Obtain access token via JWT
-  //   const jwtToken = await createGoogleJWT(serviceAccount);
-  //   const accessToken = await exchangeForAccessToken(jwtToken);
-  //
-  //   const url = `https://androidpublisher.googleapis.com/androidpublisher/v3/` +
-  //     `applications/${packageName}/purchases/products/${productId}/tokens/${purchaseToken}`;
-  //
-  //   const res = await fetch(url, {
-  //     headers: { Authorization: `Bearer ${accessToken}` },
-  //   });
-  //   if (!res.ok) return { valid: false, error: `Google Play API error: ${res.status}` };
-  //
-  //   const data = await res.json();
-  //   // purchaseState 0 = Purchased, 1 = Cancelled, 2 = Pending
-  //   if (data.purchaseState !== 0) {
-  //     return { valid: false, error: `Purchase state is not confirmed: ${data.purchaseState}` };
-  //   }
-  //   return { valid: true };
-  // } catch (err) {
-  //   return { valid: false, error: `Google Play validation failed: ${err.message}` };
-  // }
+  // ── Production path ───────────────────────────────────────────────────────────
+  const serviceAccountJson = Deno.env.get('GOOGLE_PLAY_SERVICE_ACCOUNT_JSON');
+  if (!serviceAccountJson) {
+    console.warn(`[Google Play] GOOGLE_PLAY_SERVICE_ACCOUNT_JSON not set — accepting token for ${productId}`);
+    return { valid: true };
+  }
 
-  // For now, accept all real tokens with a warning (until credentials are configured)
-  console.warn(`[Google Play] Production validation not configured — accepting token for ${productId}`);
-  return { valid: true };
+  try {
+    const serviceAccount = JSON.parse(serviceAccountJson);
+    const packageName = 'com.tikboost.app';
+
+    // Build JWT for service account authentication
+    const now = Math.floor(Date.now() / 1000);
+    const jwtHeader = btoa(JSON.stringify({ alg: 'RS256', typ: 'JWT' })).replace(/=/g, '');
+    const jwtPayload = btoa(JSON.stringify({
+      iss: serviceAccount.client_email,
+      scope: 'https://www.googleapis.com/auth/androidpublisher',
+      aud: 'https://oauth2.googleapis.com/token',
+      exp: now + 3600,
+      iat: now,
+    })).replace(/=/g, '');
+
+    // Import private key and sign JWT
+    const privateKeyPem = serviceAccount.private_key.replace(/\\n/g, '\n');
+    const pemContents = privateKeyPem.replace(/-----BEGIN PRIVATE KEY-----|-----END PRIVATE KEY-----|\n/g, '');
+    const binaryKey = Uint8Array.from(atob(pemContents), c => c.charCodeAt(0));
+    const cryptoKey = await crypto.subtle.importKey(
+      'pkcs8', binaryKey.buffer,
+      { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+      false, ['sign'],
+    );
+    const signingInput = `${jwtHeader}.${jwtPayload}`;
+    const signature = await crypto.subtle.sign(
+      'RSASSA-PKCS1-v1_5', cryptoKey,
+      new TextEncoder().encode(signingInput),
+    );
+    const jwtToken = `${signingInput}.${btoa(String.fromCharCode(...new Uint8Array(signature))).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_')}`;
+
+    // Exchange JWT for access token
+    const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: `grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer&assertion=${jwtToken}`,
+    });
+    const tokenData = await tokenRes.json();
+    const accessToken = tokenData.access_token;
+    if (!accessToken) return { valid: false, error: `Failed to obtain Google access token` };
+
+    // Validate purchase with Android Publisher API
+    const url = `https://androidpublisher.googleapis.com/androidpublisher/v3/` +
+      `applications/${packageName}/purchases/products/${productId}/tokens/${purchaseToken}`;
+    const res = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
+    if (!res.ok) return { valid: false, error: `Google Play API error: ${res.status}` };
+
+    const data = await res.json();
+    // purchaseState 0 = Purchased, 1 = Cancelled, 2 = Pending
+    if (data.purchaseState !== 0) {
+      return { valid: false, error: `Purchase not confirmed: state=${data.purchaseState}` };
+    }
+    return { valid: true };
+  } catch (err: any) {
+    return { valid: false, error: `Google Play validation failed: ${err.message}` };
+  }
 }
 
 /**
@@ -150,37 +183,39 @@ async function validateAppStore(
     return { valid: true };
   }
 
-  // ── Production path (uncomment when Apple shared secret is available) ────────
-  // try {
-  //   const sharedSecret = Deno.env.get('APPLE_SHARED_SECRET') ?? '';
-  //   const body = JSON.stringify({ 'receipt-data': receiptOrToken, password: sharedSecret });
-  //
-  //   let res = await fetch('https://buy.itunes.apple.com/verifyReceipt', {
-  //     method: 'POST', headers: { 'Content-Type': 'application/json' }, body,
-  //   });
-  //   let data = await res.json();
-  //
-  //   // 21007 = sandbox receipt sent to production endpoint; retry against sandbox
-  //   if (data.status === 21007) {
-  //     res = await fetch('https://sandbox.itunes.apple.com/verifyReceipt', {
-  //       method: 'POST', headers: { 'Content-Type': 'application/json' }, body,
-  //     });
-  //     data = await res.json();
-  //   }
-  //
-  //   if (data.status !== 0) return { valid: false, error: `App Store status: ${data.status}` };
-  //
-  //   const inApp: any[] = data.receipt?.in_app ?? [];
-  //   const found = inApp.some((p: any) => p.product_id === productId);
-  //   if (!found) return { valid: false, error: 'Product not found in receipt' };
-  //
-  //   return { valid: true };
-  // } catch (err) {
-  //   return { valid: false, error: `App Store validation failed: ${err.message}` };
-  // }
+  // ── Production path ───────────────────────────────────────────────────────────
+  const sharedSecret = Deno.env.get('APPLE_SHARED_SECRET');
+  if (!sharedSecret) {
+    console.warn(`[App Store] APPLE_SHARED_SECRET not set — accepting receipt for ${productId}`);
+    return { valid: true };
+  }
 
-  console.warn(`[App Store] Production validation not configured — accepting receipt for ${productId}`);
-  return { valid: true };
+  try {
+    const body = JSON.stringify({ 'receipt-data': receiptOrToken, password: sharedSecret });
+
+    let res = await fetch('https://buy.itunes.apple.com/verifyReceipt', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body,
+    });
+    let data = await res.json();
+
+    // 21007 = sandbox receipt sent to production endpoint; retry against sandbox
+    if (data.status === 21007) {
+      res = await fetch('https://sandbox.itunes.apple.com/verifyReceipt', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body,
+      });
+      data = await res.json();
+    }
+
+    if (data.status !== 0) return { valid: false, error: `App Store status: ${data.status}` };
+
+    const inApp: any[] = data.receipt?.in_app ?? [];
+    const found = inApp.some((p: any) => p.product_id === productId);
+    if (!found) return { valid: false, error: 'Product not found in receipt' };
+
+    return { valid: true };
+  } catch (err: any) {
+    return { valid: false, error: `App Store validation failed: ${err.message}` };
+  }
 }
 
 // ─── Main Handler ─────────────────────────────────────────────────────────────
