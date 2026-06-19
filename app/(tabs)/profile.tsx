@@ -247,6 +247,21 @@ export default function ProfileScreen() {
             <MaterialIcons name="chevron-right" size={20} color={Colors.textMuted} />
           </TouchableOpacity>
           <View style={styles.quickLinkDivider} />
+          <TouchableOpacity style={styles.quickLink} onPress={() => router.push('/subscription')} activeOpacity={0.8}>
+            <View style={[styles.quickLinkIcon, { backgroundColor: Colors.gold + '22' }]}>
+              <MaterialIcons name="workspace-premium" size={20} color={Colors.gold} />
+            </View>
+            <View style={styles.quickLinkInfo}>
+              <Text style={styles.quickLinkTitle}>Subscription Plans</Text>
+              <Text style={styles.quickLinkSub}>
+                {user.subscriptionTier && user.subscriptionTier !== 'free'
+                  ? `Active: ${user.subscriptionTier.charAt(0).toUpperCase() + user.subscriptionTier.slice(1)} plan`
+                  : 'Upgrade for 1.5x–2x star multiplier'}
+              </Text>
+            </View>
+            <MaterialIcons name="chevron-right" size={20} color={Colors.textMuted} />
+          </TouchableOpacity>
+          <View style={styles.quickLinkDivider} />
           {user.isAdmin && (
             <>
               <View style={styles.quickLinkDivider} />

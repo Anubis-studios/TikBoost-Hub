@@ -107,6 +107,7 @@ export default function AdminDashboard() {
     { label: 'Boost Orders', sub: 'View & update all boost orders', icon: 'rocket-launch', color: Colors.primary, route: '/admin/orders' },
     { label: 'Notifications', sub: 'Send broadcast & targeted alerts', icon: 'notifications', color: Colors.warning, route: '/admin/notifications' },
     { label: 'Analytics', sub: 'Revenue, growth & engagement stats', icon: 'bar-chart', color: Colors.success, route: '/admin/analytics' },
+    { label: 'Gift Codes', sub: 'Create & manage promo codes', icon: 'confirmation-number', color: Colors.warning, route: '/admin/gift-codes' },
   ];
 
   return (

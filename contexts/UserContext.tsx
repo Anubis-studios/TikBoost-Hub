@@ -166,7 +166,13 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
   const addStars = useCallback(async (amount: number, description = 'Stars earned', category = 'task') => {
     if (!user) return;
-    const result = await earnStars(user.id, amount, description, category);
+    // Apply star multiplier from subscription tier
+    const multiplier = user.starMultiplier ?? 1.0;
+    const effectiveAmount = Math.round(amount * multiplier);
+    const effectiveDesc = multiplier > 1.0
+      ? `${description} (${multiplier}x ${user.subscriptionTier ?? 'VIP'} bonus)`
+      : description;
+    const result = await earnStars(user.id, effectiveAmount, effectiveDesc, category);
     setUser((prev) => prev ? { ...prev, stars: result.stars, totalStarsEarned: result.totalStarsEarned } : prev);
   }, [user]);
 

@@ -8,6 +8,7 @@ export default function AdminLayout() {
       <Stack.Screen name="orders" />
       <Stack.Screen name="notifications" />
       <Stack.Screen name="analytics" />
+      <Stack.Screen name="gift-codes" />
     </Stack>
   );
 }

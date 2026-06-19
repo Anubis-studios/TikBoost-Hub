@@ -63,6 +63,7 @@ export default function RootLayout() {
             <Stack.Screen name="notification-settings" options={{ presentation: 'card' }} />
             <Stack.Screen name="redeem-gift" options={{ presentation: 'card' }} />
             <Stack.Screen name="rewards" options={{ presentation: 'card' }} />
+            <Stack.Screen name="subscription" options={{ presentation: 'card' }} />
           </Stack>
         </UserProvider>
       </SafeAreaProvider>

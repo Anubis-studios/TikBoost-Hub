@@ -16,6 +16,9 @@ export interface TikBoostUser {
   referralCode: string;
   completedTaskIds: string[];
   activeBoosts: ActiveBoost[];
+  subscriptionTier: string | null;   // 'free' | 'pro' | 'elite'
+  starMultiplier: number;             // from subscription_plans.star_multiplier
+  boostMultiplier: number;            // from subscription_plans.boost_multiplier
 }
 
 export interface ActiveBoost {
@@ -76,7 +79,10 @@ function generateReferralCode(): string {
   return Array.from({ length: 8 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
 }
 
-function mapProfile(row: any): TikBoostUser {
+function mapProfile(row: any, planRow?: any): TikBoostUser {
+  // Derive multipliers from subscription plan row (or defaults)
+  const starMultiplier = planRow?.star_multiplier ?? (row.is_vip ? 1.5 : 1.0);
+  const boostMultiplier = planRow?.boost_multiplier ?? (row.is_vip ? 1.5 : 1.0);
   return {
     id: row.id,
     email: row.email || '',
@@ -91,6 +97,9 @@ function mapProfile(row: any): TikBoostUser {
     referralCode: row.referral_code || '',
     completedTaskIds: row.completed_task_ids || [],
     activeBoosts: (row.active_boosts || []) as ActiveBoost[],
+    subscriptionTier: row.subscription_tier || null,
+    starMultiplier,
+    boostMultiplier,
   };
 }
 
@@ -137,7 +146,19 @@ export async function loadProfile(userId: string): Promise<TikBoostUser | null> 
     .eq('id', userId)
     .single();
   if (error || !data) return null;
-  return mapProfile(data);
+
+  // Load subscription plan for multipliers
+  let planRow: any = null;
+  if (data.subscription_tier) {
+    const { data: plan } = await supabase
+      .from('subscription_plans')
+      .select('star_multiplier, boost_multiplier')
+      .eq('id', data.subscription_tier)
+      .maybeSingle();
+    planRow = plan;
+  }
+
+  return mapProfile(data, planRow);
 }
 
 export async function updateProfile(userId: string, updates: Record<string, any>) {
