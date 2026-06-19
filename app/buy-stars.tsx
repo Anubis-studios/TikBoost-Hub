@@ -518,21 +518,11 @@ export default function BuyStarsScreen() {
     await handleIAPPurchase(
       LUCKY_SPIN_CONFIG.productId as IAPProductId,
       'Lucky Wheel Spin',
-      async () => {
-        // Determine random win
-        const segments = LUCKY_SPIN_CONFIG.segments;
-        const win = segments[Math.floor(Math.random() * segments.length)];
-        // Award stars
-        const { data: sessionData } = await supabase.auth.getSession();
-        const token = sessionData?.session?.access_token;
-        if (token) {
-          await supabase.functions.invoke('award-spin-stars', {
-            body: { amount: win },
-            headers: { Authorization: `Bearer ${token}` },
-          }).catch(() => {});
-        }
+      async (purchase) => {
+        // Stars are awarded server-side by verify-iap-purchase
+        // The edge function picks a random segment and records the win
         await refreshUser();
-        showAlert('Lucky Wheel!', `You won ${win} stars! Keep spinning to win more!`);
+        showAlert('Lucky Wheel!', 'Your spin result has been recorded — check your star balance!');
       }
     );
   };
