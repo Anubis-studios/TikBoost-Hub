@@ -11,16 +11,20 @@ import { Platform, Alert } from 'react-native';
 // These must match the product IDs configured in Google Play Console & App Store Connect
 
 export const IAP_PRODUCT_IDS = {
-  STARS_500:      'com.tikboost.stars.500',
-  STARS_1000:     'com.tikboost.stars.1000',
-  STARS_2500:     'com.tikboost.stars.2500',
-  STARS_5000:     'com.tikboost.stars.5000',
-  STARS_10000:    'com.tikboost.stars.10000',
-  VIP_30:         'com.tikboost.vip.30days',
-  LUCKY_SPIN:     'com.tikboost.wheel.spin',
-  BUNDLE_STARTER: 'com.tikboost.bundle.starter',
-  BUNDLE_GROWTH:  'com.tikboost.bundle.growth',
-  BUNDLE_VIRAL:   'com.tikboost.bundle.viral',
+  STARS_500:        'com.tikboost.stars.500',
+  STARS_1000:       'com.tikboost.stars.1000',
+  STARS_2500:       'com.tikboost.stars.2500',
+  STARS_5000:       'com.tikboost.stars.5000',
+  STARS_10000:      'com.tikboost.stars.10000',
+  VIP_30:           'com.tikboost.vip.30days',
+  LUCKY_SPIN:       'com.tikboost.wheel.spin',
+  BUNDLE_STARTER:   'com.tikboost.bundle.starter',
+  BUNDLE_GROWTH:    'com.tikboost.bundle.growth',
+  BUNDLE_VIRAL:     'com.tikboost.bundle.viral',
+  // Premium mini-games
+  GAME_NUMBER_PICK: 'com.tikboost.game.numberpick',  // Number Picker — single play
+  GAME_MEMORY:      'com.tikboost.game.memory',       // Memory Match — single play
+  GAME_SPIN_EXTRA:  'com.tikboost.game.spinextra',    // Extra spin for free wheel
 } as const;
 
 export type IAPProductId = typeof IAP_PRODUCT_IDS[keyof typeof IAP_PRODUCT_IDS];
@@ -199,6 +203,45 @@ export function getStarsForProduct(productId: IAPProductId): number {
 export function isVIPProduct(productId: IAPProductId): boolean {
   return productId === IAP_PRODUCT_IDS.VIP_30 || BUNDLE_PLANS.some(b => b.productId === productId);
 }
+
+// ─── Premium Game Config ─────────────────────────────────────────────────────
+
+export interface PremiumGameConfig {
+  productId: IAPProductId;
+  price: string;
+  minWin: number;
+  maxWin: number;
+  description: string;
+}
+
+export const NUMBER_PICK_CONFIG: PremiumGameConfig = {
+  productId: IAP_PRODUCT_IDS.GAME_NUMBER_PICK,
+  price: '£1.99',
+  minWin: 50,
+  maxWin: 5000,
+  description: 'Pick a number 1–10 to win up to 5,000 stars',
+};
+
+export const MEMORY_MATCH_CONFIG: PremiumGameConfig = {
+  productId: IAP_PRODUCT_IDS.GAME_MEMORY,
+  price: '£2.99',
+  minWin: 100,
+  maxWin: 10000,
+  description: 'Match all pairs to multiply your prize',
+};
+
+export const EXTRA_SPIN_CONFIG = {
+  productId: IAP_PRODUCT_IDS.GAME_SPIN_EXTRA,
+  price: '£0.99',
+  description: 'Buy an extra spin on the free daily wheel',
+};
+
+// Weekly spin allowance for subscription tiers
+export const WEEKLY_FREE_SPINS: Record<string, number> = {
+  free:  1,
+  pro:   3,
+  elite: 7,
+};
 
 export function getVIPDaysForProduct(productId: IAPProductId): number {
   if (productId === IAP_PRODUCT_IDS.VIP_30) return VIP_PLAN.days;
